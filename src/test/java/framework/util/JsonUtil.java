@@ -92,7 +92,7 @@ public class JsonUtil {
         DataManipulationUtils utils = new DataManipulationUtils();
         double totalPrice = 0;
         for (HashMap<String, String> product : products) {
-            totalPrice += utils.parsePriceString(product.get("priceUsd"));
+            totalPrice += utils.parseAndRoundPriceString(product.get("priceUsd"));
         }
         return totalPrice;
     }

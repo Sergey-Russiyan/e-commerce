@@ -44,5 +44,14 @@ public class BasePage {
 			return true;
 		}
 	}
+	public boolean areElementsDisplayed(WebElement... elements) {
+		for (WebElement element : elements) {
+			if (!element.isDisplayed()) {
+				LoggerUtil.log("At page:\n" + driver.getCurrentUrl() + "\nNot displayed element:\n" + element);
+				return false;
+			}
+		}
+		return true;
+	}
 
 }

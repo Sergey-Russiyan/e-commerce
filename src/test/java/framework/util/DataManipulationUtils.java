@@ -1,5 +1,6 @@
 package framework.util;
 
+import java.text.DecimalFormat;
 import java.util.Random;
 
 /**
@@ -9,12 +10,28 @@ import java.util.Random;
 public class DataManipulationUtils {
     private static final Random random = new Random();
 
-    public double parsePriceString(String priceString) {
+    public static double parseAndRoundPriceString(String priceString) {
         // Remove dollar sign and any other non-numeric characters
         String cleanedPrice = priceString.replaceAll("[^\\d.]", "");
         // Parse the cleaned string to double
-        return Double.parseDouble(cleanedPrice);
+        double parsedValue = Double.parseDouble(cleanedPrice);
+
+        // Format the parsed value to two decimal places
+        DecimalFormat df = new DecimalFormat("#.##");
+        String formattedValue = df.format(parsedValue);
+
+        // Parse the formatted value back to double
+        return Double.parseDouble(formattedValue);
     }
+
+    public static double roundToTwoDecimalPlaces(double value) {
+        // Convert the double value to string and round it to two decimal places
+        String formattedValue = String.format("%.2f", value);
+        // Parse the formatted value back to double
+        return Double.parseDouble(formattedValue);
+    }
+
+
     private static final String[] firstNames = {"John", "Alice", "Michael", "Emily", "David", "Sophia"};
     private static final String[] lastNames = {"Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia"};
     private static final String[] postalCodes = {"10001", "20001", "30001", "40001", "50001", "60001"};

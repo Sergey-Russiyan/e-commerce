@@ -15,6 +15,15 @@ public class CheckoutCompletePage extends BasePage {
 
     @FindBy(xpath = "//*[@class='title'][.='Checkout: Complete!']")
     private WebElement pageTitle;
+    @FindBy(xpath = "//*[@class='complete-header'][.='Thank you for your order!']")
+    private WebElement completeHeader;
+    @FindBy(xpath = "//*[@class='complete-text'][.='Your order has been dispatched, and will arrive just as fast as the pony can get there!']")
+    private WebElement completeText;
+    @FindBy(className = "pony_express")
+    private WebElement shippingCompanyLogo;
+    @FindBy(id = "back-to-products")
+    private WebElement backHomeButton;
+
 
     /**
      * Instantiates a new base page.
@@ -30,5 +39,11 @@ public class CheckoutCompletePage extends BasePage {
     }
     public boolean isTitleDisplayed() {
         return pageTitle.isDisplayed();
+    }
+    public boolean isCompleteSuccessUiDisplayed() {
+        return areElementsDisplayed(completeHeader, completeText, shippingCompanyLogo);
+    }
+    public void clickBackHome() {
+        backHomeButton.click();
     }
 }

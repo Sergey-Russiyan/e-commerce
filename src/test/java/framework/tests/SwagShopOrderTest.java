@@ -27,7 +27,15 @@ public class SwagShopOrderTest extends BaseTest {
     // this is configuration point for all tests related to adding/removing products
     // update this list if you want other product to be added/tested
     private static List < String > productsToAdd = Arrays.asList("Backpack", "Fleece Jacket", "Onesie");
-    static int indexOfProductToRemove = 2;
+    private static final int indexOfProductToRemove = 2;
+
+    //for now its hardcoded 'magic number' (anti-pattern)
+
+    private static final double expectedTaxAmount = 6.40;
+    public static final String expectedCard = "SauceCard #31337";
+    public static final String expectedShippingCompany = "Free Pony Express Delivery!";
+    // TODO {link to relevant JIRA task} | move tax amount to 'SwagLabsProducts.json' (for taxes) or separate business logic class to avoid hardcode
+    //end of config
 
     //removing last one product, according to test case requirement
     private static List < String > productsToRemove = Arrays.asList(productsToAdd.get(indexOfProductToRemove));
@@ -38,8 +46,10 @@ public class SwagShopOrderTest extends BaseTest {
 
     //calculate expected total price for test products
     double expectedPriceBeforeRemoval = jsonUtil.calculateTotalPrice(productsToTest);
-    double priceOfProductToRemove = util.parsePriceString(productsToTest.get(indexOfProductToRemove).get("priceUsd"));
+    double priceOfProductToRemove = util.parseAndRoundPriceString(productsToTest.get(indexOfProductToRemove).get("priceUsd"));
     double expectedPriceAfterRemoval = expectedPriceBeforeRemoval - priceOfProductToRemove;
+    private double expectedGrandTotal = new DataManipulationUtils().roundToTwoDecimalPlaces(expectedPriceAfterRemoval + expectedTaxAmount);
+
 
     @Test(testName = "User could login into Swag Shop",
             description = "Go to login page, grab credentials from UI, log-in")
@@ -159,9 +169,26 @@ public class SwagShopOrderTest extends BaseTest {
         Assert.assertEquals(driver.getCurrentUrl(), stepTwoPagePage.getExpectedUrl(), "Unexpected url, after click on continue @ checkout step 1");
     }
 
+    @Test(testName = "User could see order information",
+            description = "Verify order details: Payment, Shipping, Price, Tax",
+            dependsOnMethods = "userCouldSetValidCredentialsAndContinueCheckout")
+    public void userCouldSeeOrderInformation() {
+        CheckoutStepTwoPage stepTwoPagePage = new CheckoutStepTwoPage(driver);
+        String msg = " at the 'checkout step 2' page";
+
+        Assert.assertTrue(stepTwoPagePage.isOrderLabelsDisplayed(), "No info (payment, shipping, total price) about order" + msg);
+        Assert.assertEquals(stepTwoPagePage.getTotalPriceFromCards(), expectedPriceAfterRemoval, "Wrong total price of products cards" + msg);
+        Assert.assertEquals(stepTwoPagePage.getPaymentValue(), expectedCard, "Wrong payment card info" + msg);
+        Assert.assertEquals(stepTwoPagePage.getShippingValue(), expectedShippingCompany, "Wrong shipping company info" + msg);
+
+        Assert.assertEquals(stepTwoPagePage.getPriceFromItemTotal(), expectedPriceAfterRemoval, "Wrong item(s) price in summary" + msg);
+        Assert.assertEquals(stepTwoPagePage.getValueFromTax(), expectedTaxAmount, "Wrong tax value in summary" + msg);
+        Assert.assertEquals(stepTwoPagePage.getPriceGrandTotal(), expectedGrandTotal, "Wrong grand total price in summary" + msg);
+    }
+
     @Test(testName = "User could finalize checkout",
             description = "Verify order info. Click 'Finish', verify new page opened",
-            dependsOnMethods = "userCouldSetValidCredentialsAndContinueCheckout")
+            dependsOnMethods = "userCouldSeeOrderInformation")
     public void userCouldFinalizeCheckout() {
         CheckoutStepTwoPage stepTwoPagePage = new CheckoutStepTwoPage(driver);
         stepTwoPagePage.clickFinish();
@@ -170,6 +197,18 @@ public class SwagShopOrderTest extends BaseTest {
 
         Assert.assertTrue(checkoutCompletePage.isTitleDisplayed(), "No Expected page title at 'Checkout complete' page");
         Assert.assertEquals(driver.getCurrentUrl(), checkoutCompletePage.getExpectedUrl(), "Unexpected url, after click on continue @ checkout step 1");
+    }
+    @Test(testName = "User use app further after finalized checkout",
+            description = "Click 'Back Home', verify 'inventory' page opened",
+            dependsOnMethods = "userCouldFinalizeCheckout")
+    public void userCouldGoOnAfterCheckoutCompleted() {
+        CheckoutCompletePage checkoutCompletePage = new CheckoutCompletePage(driver);
+        checkoutCompletePage.clickBackHome();
+
+        InventoryPage inventoryPage = new InventoryPage(driver);
+
+        Assert.assertTrue(inventoryPage.isTitleDisplayed(), "No expected title");
+        Assert.assertEquals(driver.getCurrentUrl(), inventoryPage.getExpectedUrl(), "Unexpected page after user clicked 'Back Home'");
     }
 
 }

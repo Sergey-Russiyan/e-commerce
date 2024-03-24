@@ -67,7 +67,7 @@ public class ProductCardFragment extends BasePage {
 
         for (WebElement priceElement : genericProductsPriceTag) {
             String priceString = priceElement.getText();
-            double priceValue = new DataManipulationUtils().parsePriceString(priceString);
+            double priceValue = new DataManipulationUtils().parseAndRoundPriceString(priceString);
             totalPrice += priceValue;
         }
         return totalPrice;
