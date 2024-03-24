@@ -17,7 +17,6 @@ import org.testng.ITestResult;
  * occurs, that object's appropriate method is invoked.
  *
  * @author Serhii R.
- * @see ReportEvent
  */
 public class ReportListener implements ITestListener {
 
